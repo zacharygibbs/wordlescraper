@@ -1,3 +1,7 @@
+secret*.json
+tweet_list.csv
+word_list.csv
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
