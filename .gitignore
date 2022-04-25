@@ -1,6 +1,5 @@
 secret*.json
-tweet_list.csv
-word_list.csv
+*_list.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
