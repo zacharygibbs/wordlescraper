@@ -36,3 +36,12 @@ def match_df_index(dfi, en):
             en = np.float32(en.replace(',',''))
     return en
 
+def get_stats(df, stat1, en=None):
+    pct_columns = df[[i for i in df.columns if 'pct_' in i]]
+    funclist = {
+        'avg':get_avg,
+        'stddev':get_stddev,
+        'skewness': lambda df1: get_skewness(df1, en=en)
+    }
+    return pct_columns.apply(funclist[stat1], axis=1)
+
