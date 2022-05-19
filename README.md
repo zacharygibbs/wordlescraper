@@ -11,4 +11,12 @@ requires -
 tweepy
 gspread
 
+In order to run in automted fashion, you will need to update your crontab file with the path
+to your conda distribution and the code itself in the crontab.txt file
 
+once that is completed, you can add it to the linux automated cron jobs
+```
+crontab crontab.txt
+crontab -l
+```
+which should add, then display the cron job

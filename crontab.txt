@@ -1,0 +1,1 @@
+0 23 * * * /home/zacharygibbs/Documents/dataengineering/wordlescraper/get_all.sh /home/zacharygibbs/miniconda3/bin/conda datascience 1>> /home/zacharygibbs/Documents/dataengineering/wordlescraper/log.txt 2>> /home/zacharygibbs/Documents/dataengineering/wordlescraper/log.txt
