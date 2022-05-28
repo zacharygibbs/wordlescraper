@@ -8,12 +8,13 @@ ftp_server = ftplib.FTP(sec['host'], sec['username'], sec['password'])
 # force UTF-8 encoding
 ftp_server.encoding = "utf-8"
 # Enter File Name with Extension
-filename = "wordlestats_list.csv"
+filenames = ["wordlestats_list.csv", "wordlestats_list.json"]
 upload_path = 'public_html/data'
 # Read file in binary mode
-with open(filename, "rb") as file:
-    # Command for Uploading the file "STOR filename"
-    ftp_server.storbinary(f"STOR {os.path.join(upload_path,filename)}", file)
+for filename in filenames:
+    with open(filename, "rb") as file:
+        # Command for Uploading the file "STOR filename"
+        ftp_server.storbinary(f"STOR {os.path.join(upload_path,filename)}", file)
 # Get list of files
 ftp_server.dir(os.path.join(upload_path,filename))
 # Close the Connection

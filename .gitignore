@@ -1,5 +1,6 @@
 secret*.json
 *_list.csv
+*_list.json
 log.txt
 
 # Byte-compiled / optimized / DLL files

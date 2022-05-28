@@ -26,6 +26,7 @@ df = df.sort_values('date', ascending=False)
 
 df.to_csv('wordlestats_list.csv')
 
+df.to_json('wordlestats_list.json')
 
 
 
