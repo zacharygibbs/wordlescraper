@@ -15,17 +15,17 @@ grand_avg = np.sum(tweet_list['avg'] * tweet_list['numresults']) / tweet_list['n
 my_data = False
 if my_data:
     my_data =pd.read_csv('my_data_list.csv')
-    print(f'grand avg:{grand_avg}, my_data: {my_data.avg}')
-    
-
-df = tweet_list.merge(word_list, how='left', on='wordleid')
+    print(f'grand avg:{grand_avg}, my_data: {my_data.avg}')  
+tweet_list = tweet_list.copy().dropna(how="any")
+tweet_list['date'] = pd.to_datetime( tweet_list.copy()[['year', 'month', 'day']])
+tweet_list['wordleid'] = tweet_list.copy()['wordleid'].astype('int64')
+df = tweet_list.merge(word_list.drop('date',axis=1), how='left', on='wordleid')
 df = df[['wordleid', 'date', 'wordleword', 'numresults', 'pct_1', 'pct_2', 'pct_3', 'pct_4', 'pct_5', 'pct_6', 'pct_X', 'avg', 'stddev']]
-
-df['date'] = pd.to_datetime(df['date'])
+#import ipdb;ipdb.set_trace()
+#df['date'] = pd.to_datetime(df['date'])
 df = df.sort_values('date', ascending=False)
-
+df = df.reset_index()
 df.to_csv('wordlestats_list.csv')
-
 df.to_json('wordlestats_list.json')
 
 

@@ -9,7 +9,7 @@ ftp_server = ftplib.FTP(sec['host'], sec['username'], sec['password'])
 ftp_server.encoding = "utf-8"
 # Enter File Name with Extension
 filenames = ["wordlestats_list.csv", "wordlestats_list.json"]
-upload_path = 'public_html/data'
+upload_path = 'public_html/wordle-stats-sciencey'
 # Read file in binary mode
 for filename in filenames:
     with open(filename, "rb") as file:
