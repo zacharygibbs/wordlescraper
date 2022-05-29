@@ -11,7 +11,9 @@
     //  add distrib?
     //  add average / skewness?
     //  add dropdown to choose date, will show word and date
-    //  add cookie to remember user stats?    
+    //  add cookie to remember user stats?   
+    // time series chart to show distribution 
+    // get better worlde winne website (https://screenrant.com/wordle-answers-updated-word-puzzle-guide/)
     import {sum, dotprod} from './helpers.js'
 
     import { onMount } from "svelte";
@@ -25,7 +27,13 @@
     let dfUser = {};
     let isMounted = false;
     onMount(async () => {
-        userStatsnum = JSON.parse(localStorage.getItem('userStatsnum')); // undefined
+        if(Array.isArray(JSON.parse(localStorage.getItem('userStatsnum')))){
+            userStatsnum = JSON.parse(localStorage.getItem('userStatsnum')); // undefined
+        }
+        else{
+            userStatsnum = [0,0,0,1,0,0,0];
+        }
+        
         d3.json("wordlestats_list.json")
         //d3.json("http://coolsciencey.com/data/wordlestats_list.json")
         .then((data) =>{
@@ -136,9 +144,9 @@
 </script>
 <Container>
     <Row>
-        <h1>Wordle Statistics Comparison</h1>
+        <h1>Wordle-Stats-Sciencey</h1>
         <br>
-        <span><img src="favicon.png" width="20"/><i>Created in Svelte</i></span> 
+        <span><img src="favicon.png" width="20" alt=''/><i>Created in Svelte</i></span> 
         
     </Row>
     <Row>
@@ -190,7 +198,7 @@
         
     </Row>
 </Container>
-
+Data Source: <a href="https://twitter.com/wordlestats">@wordlestats</a> Twitter Account
 <Styles></Styles>
 
 

@@ -6,6 +6,8 @@ const config = {
 	kit: {
 		// hydrate the <div id="svelte"> element in src/app.html
 		adapter: adapter(),
+		appDir: 'wordle-stats-sciencey/_app',
+		prerender: {default: true},
 		vite: {
 			ssr: {
 			  noExternal: ['@popperjs/core']
