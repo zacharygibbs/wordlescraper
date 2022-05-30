@@ -14,18 +14,24 @@
     //  add cookie to remember user stats?   
     // time series chart to show distribution 
     // get better worlde winne website (https://screenrant.com/wordle-answers-updated-word-puzzle-guide/)
-    import {sum, dotprod} from './helpers.js'
+    import {sum, dotprod, setSelectedValue} from './helpers.js'
 
     import { onMount } from "svelte";
     import { Styles, Col, Container, Row } from 'sveltestrap';
-    import { Button, Input} from 'sveltestrap';
+    import { Button, Input, FormGroup, Label} from 'sveltestrap';
+    import { TabContent, TabPane } from 'sveltestrap';
     import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'sveltestrap';
+
     import * as d3 from 'd3';
 
 
     let df = {};
-    let dfUser = {};
+    let selectedItemTimeSeries = null;
     let isMounted = false;
+    const KEYLISTDEFAULT = ['avg', 'stddev'];
+    let keylist = KEYLISTDEFAULT;
+    const EXCLUDEKEY = ['wordleid', 'wordleword', 'date', 'index'];
+
     onMount(async () => {
         if(Array.isArray(JSON.parse(localStorage.getItem('userStatsnum')))){
             userStatsnum = JSON.parse(localStorage.getItem('userStatsnum')); // undefined
@@ -39,24 +45,48 @@
         .then((data) =>{
                    console.log(data); // [{"Hello": "world"}, …]
                    df = data
-                   // df.print() 
                  })
         isMounted=true;
+        console.log('here', selectedItemTimeSeries)
+        selectedItemTimeSeries = 'avg';
+        updateValue()
 	});
+
+    function updateValue() {
+        let fs = document.getElementById('form-select')
+        console.log('here2', selectedItemTimeSeries)
+        setSelectedValue(fs, 'avg');
+        console.log('here3', selectedItemTimeSeries)
+    }
+
+    
+    
 
     $: {
         
         if(Object.keys(df).length>0){
             console.log(df)
             let newdf = {};
+            keylist = KEYLISTDEFAULT;
             for(let i in Object.keys(df)){
                 let key = Object.keys(df)[i];
+                if(!keylist.includes(key) & !EXCLUDEKEY.includes(key)){
+                    keylist.push(key)
+                }
                 let newseries = [];
                 for(let j in Object.keys(df[key])){
                     let key2 = Object.keys(df[key])[j]
                     newseries.push(df[key][key2]);
                 }
                 newdf[key] = newseries;
+                if(key=='date'){
+                    console.log(newdf['date'])
+                    newdf['date'] = newdf['date'].map(
+                       (val, ind, arr) => {
+                           return new Date(val*1000)
+                       }
+                   )
+                }
             }
             df = newdf;
             avgStatsnum = statsNumbersstrs.map((val, ind) =>{
@@ -73,6 +103,7 @@
     }
 
     $: {
+        console.log('here4', selectedItemTimeSeries)
         if(isMounted){
             let trace1 = {
                 y: statsNumbers,
@@ -111,10 +142,37 @@
                     y: 1.02,
                     xanchor: "right",
                     x: .5
-                }
+                },
+                displayModeBar: false
             };
             const PLOTLYDOM = document.getElementById('plotly-chart');
             Plotly.newPlot(PLOTLYDOM, data, layout);
+        }
+    }
+
+    $: {
+        if(isMounted){
+            let trace1 = {
+                x: df['wordleid'],
+                y: df[selectedItemTimeSeries],
+                text: df['wordleword'],
+                type: 'scatter',
+            };
+
+            let data = [trace1];
+
+            let layout = {
+                xaxis: {
+                    title: 'wordleid'
+                },
+                yaxis: {
+                    title: selectedItemTimeSeries,
+                },
+                title: '',
+                displayModeBar: false
+            };
+            const PLOTLYDOMTIME = document.getElementById('plotly-chart-time');
+            Plotly.newPlot(PLOTLYDOMTIME, data, layout);
         }
     }
 
@@ -185,20 +243,37 @@
             <!-- <Button color="primary">butt</Button> -->
         </Col>
         <Col>
-            <div id='plotly-chart' style="width:100%;height:90%;"></div>
-            <!-- <div class="mb-3">
-                <Dropdown>
-                  <DropdownToggle caret>Date</DropdownToggle>
-                  <DropdownMenu>
-                    <DropdownItem>No Brush, No Lather</DropdownItem>
-                  </DropdownMenu>
-                </Dropdown> 
-              </div> -->
+            <TabContent pills>
+                <TabPane tabId="tab-score-dist" tab="Score Distribution" active>
+                    <div id='plotly-chart' style="width:100%;height:90%;"></div>
+                    <!-- <div class="mb-3">
+                        <Dropdown>
+                        <DropdownToggle caret>Date</DropdownToggle>
+                        <DropdownMenu>
+                            <DropdownItem>No Brush, No Lather</DropdownItem>
+                        </DropdownMenu>
+                        </Dropdown> 
+                    </div> -->
+                </TabPane>
+                <TabPane tabId="tab-time" tab="Time Distribution">
+                    <FormGroup>
+                        <Label for="form-select">Select</Label>
+                        <Input type="select" name="form-select" id="form-select" bind:value={selectedItemTimeSeries}>
+                            {#each keylist as key}
+                                <option>{key}</option>
+                            {/each}
+                        </Input>
+                      </FormGroup>
+                    <div id='plotly-chart-time' style="width:100%;height:90%;"></div>
+                </TabPane>
+            </TabContent>
+
         </Col>
         
     </Row>
 </Container>
-Data Source: <a href="https://twitter.com/wordlestats">@wordlestats</a> Twitter Account
+Data Source: <a href="https://twitter.com/wordlestats">@wordlestats</a> Twitter Account<br>
+Data Source2: <a href="http://screenrant.com/wordle-answers-updated-word-puzzle-guide/">screenrant.com</a> web page
 <Styles></Styles>
 
 
@@ -211,6 +286,7 @@ Data Source: <a href="https://twitter.com/wordlestats">@wordlestats</a> Twitter 
     padding-left: 30px;
     padding-right: 40px;
 }
+
 
 
 </style>
