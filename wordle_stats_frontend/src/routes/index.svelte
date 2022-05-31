@@ -14,7 +14,7 @@
     //  add cookie to remember user stats?   
     // time series chart to show distribution 
     // get better worlde winne website (https://screenrant.com/wordle-answers-updated-word-puzzle-guide/)
-    import {sum, dotprod, setSelectedValue} from './helpers.js'
+    import { sum, dotprod, setSelectedValue, calcAvg } from './helpers.js'
 
     import { onMount } from "svelte";
     import { Styles, Col, Container, Row } from 'sveltestrap';
@@ -23,6 +23,7 @@
     import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'sveltestrap';
 
     import * as d3 from 'd3';
+    import * as Statistics from 'statistics';
 
 
     let df = {};
@@ -31,6 +32,18 @@
     const KEYLISTDEFAULT = ['avg', 'stddev'];
     let keylist = KEYLISTDEFAULT;
     const EXCLUDEKEY = ['wordleid', 'wordleword', 'date', 'index'];
+    let userAvg;
+    let avgAvg;
+    debugger;
+
+    let statsNumbersstrs = ["1","2","3","4","5","6","X"];
+    let statsNumbers = [1,2,3,4,5,6,7];
+    let avgStatsnum = [0, 0, 0, 0, 0, 0, 0];
+    let avgStatspct = [0, 0, 0, 0, 0, 0, 0];
+    let avgTotal;
+    let userStatsnum = [0, 0, 0, 1, 0, 0, 0];
+    let userStatspct = [0, 0, 0, 0, 0, 0, 0];
+    let userTotal;
 
     onMount(async () => {
         if(Array.isArray(JSON.parse(localStorage.getItem('userStatsnum')))){
@@ -176,16 +189,6 @@
         }
     }
 
-    let statsNumbersstrs = ["1","2","3","4","5","6","X"];
-    let statsNumbers = [1,2,3,4,5,6,7];
-    let avgStatsnum = [0, 0, 0, 0, 0, 0, 0];
-    let avgStatspct = [0, 0, 0, 0, 0, 0, 0];
-    let avgTotal;
-    let userStatsnum = [0, 0, 0, 1, 0, 0, 0];
-    let userStatspct = [0, 0, 0, 0, 0, 0, 0];
-    let userTotal;
-
-
     $:{
         if(isMounted){
             userTotal = sum(userStatsnum);
@@ -196,6 +199,9 @@
     $:{
         userStatspct = userStatsnum.map((x) => x / userTotal * 100);
     }
+
+    $: userAvg = calcAvg(...userStatspct)
+    $: avgAvg = calcAvg(...avgStatspct)
 
 
 
@@ -235,8 +241,8 @@
                 <tr>
                     <td></td>
                     <td>Total: {userTotal}</td>
-                    <td></td>
-                    <td></td>
+                    <td>Avg: {userAvg.toFixed(2)}</td>
+                    <td>Avg: {avgAvg.toFixed(2)}</td>
                 </tr>
 
             </table>
@@ -273,7 +279,8 @@
     </Row>
 </Container>
 Data Source: <a href="https://twitter.com/wordlestats">@wordlestats</a> Twitter Account<br>
-Data Source2: <a href="http://screenrant.com/wordle-answers-updated-word-puzzle-guide/">screenrant.com</a> web page
+Data Source2: <a href="http://screenrant.com/wordle-answers-updated-word-puzzle-guide/">screenrant.com</a> web page<br>
+Note - "avg" metrics use 7 as numerical representation for number of guesses for "X", or if you do not get it correct.
 <Styles></Styles>
 
 

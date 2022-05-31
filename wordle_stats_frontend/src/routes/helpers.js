@@ -20,3 +20,7 @@ export const setSelectedValue = (selectObj, valueToSet) => {
         }
     }
 }
+
+export const calcAvg = (pct1, pct2, pct3, pct4, pct5, pct6, pctx) => {
+    return (pct1 * 1 + pct2 * 2 + pct3 * 3 + pct4 * 4 + pct5 * 5 + pct6 * 6 + pctx * 7) / 100
+}
