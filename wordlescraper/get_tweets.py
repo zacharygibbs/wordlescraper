@@ -7,6 +7,7 @@ import numpy as np
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 
 from functions_stats import get_avg, get_stddev, get_skewness
 
@@ -20,7 +21,7 @@ def get_auth():
 
 if __name__ == '__main__':
     api = get_auth()
-    first_time = False
+    first_time = not os.path.exists('tweet_list.csv')#False
     num_tweets = 10 if not first_time else 1000 #assume this will run more often than every 10 days
     timeline = api.user_timeline(screen_name='wordlestats', count=num_tweets, tweet_mode='extended', exclude_replies=True)#user_id, screen_name, since_id, count, max_id, trim_user, exclude_replies, include_rts)
     if not first_time:

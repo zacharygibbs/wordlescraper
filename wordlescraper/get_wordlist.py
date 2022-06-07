@@ -1,6 +1,6 @@
 import pandas as pd
 import re
-#import gspread
+import os
 
 from bs4 import BeautifulSoup
 import urllib.request
@@ -10,7 +10,10 @@ sock = urllib.request.urlopen(url).read().decode("utf-8")
 soup = BeautifulSoup(sock, 'html.parser')
 #print(soup.prettify())
 
-word_list_old = pd.read_csv('word_list.csv')
+if os.path.exists('word_list.csv'):
+    word_list_old = pd.read_csv('word_list.csv')
+else:
+    word_list_old = None
 
 tag = soup.find_all("li", recursive=True)
 tag = pd.Series(tag)
@@ -18,7 +21,10 @@ tag = tag.astype(str)
 word_list = tag.str.extract(r"(?P<date>[A-Z][a-z]*\D*\d{2}) - #(?P<wordleid>\d{2,5})[^A-Z]*(?P<wordleword>[A-Z]*)")\
                .dropna()
 word_list['wordleid'] = word_list["wordleid"].astype("int64")
-word_list = pd.concat([word_list, word_list_old]).drop_duplicates()
+if word_list_old:
+    word_list = pd.concat([word_list, word_list_old]).drop_duplicates()
+else:
+    word_list = word_list.drop_duplicates()
 word_list.to_csv('word_list.csv', index=False)
 
 #shard, pleat, aloft, skill, frame ,caulk; all of the Jan ones

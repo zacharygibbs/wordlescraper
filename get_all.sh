@@ -1,5 +1,5 @@
 #/usr/bin/bash
-base_dir="/home/zacharygibbs/Documents/dataengineering/wordlescraper/wordlescraper"
+base_dir="/home/zacharygibbs/documents/dataengineering/wordlescraper/wordlescraper"
 cd $base_dir
 if [ $# -eq 0 ]
   then
