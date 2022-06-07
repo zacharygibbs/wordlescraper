@@ -30,6 +30,11 @@ secret_web.json
 ```
 
 Optionally - if you would like to access the [kaggle word frequency dataset](https://www.kaggle.com/datasets/rtatman/english-word-frequency) in order to run the anaytics workbook, it can be downloaded from here (or with the kaggle api)
+once set up with a ~/.kaggle/kaggle.json username and key, run the shell script:
+```
+cd wordlestats
+bash get_kaggle_frequency_dataset.sh
+```
 
 ### Python Running Nightly Data Pull - Cron Job
 In order to run in automated fashion, you will need to update your crontab file with the path
