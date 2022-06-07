@@ -9,22 +9,33 @@ Additionally, data analytics/machine learning is performed using the gathered da
 
 ## Python 
 ### Installation
-Python:
-    tweepy
-    beautifulsoup4
-    pandas
-    numpy
-    scipy
-    matplotlib
-    seaborn
-    statsmodels
-    scikit-learn
+A [conda environment](https://docs.conda.io/en/latest/miniconda.html#latest-miniconda-installer-links) can be built by running the following command in the shell
+```
+cd wordlescraper
+conda env create -f conda_wordlestats.yml
+conda activate wordlestats
+```
 
 ### Credentials Setup
+credentials should be set up using 'secret_*.json' files located in the 'wordlescraper/wordlescraper/' folder.
+secret.json
+    Should contain a json dictionary with key 'token' with an active [Twitter API key](https://developer.twitter.com/en/docs/twitter-api)
+```
+{"token":"ABCDEFGTWITTERAPIKEYHERE"}
+```
+secret_web.json
+    should contain FTP credentials
+```
+{"host": "ftphosthere.com", "username": "your_username","password": "your_password_321"}
+```
+
+Optionally - if you would like to access the [kaggle word frequency dataset](https://www.kaggle.com/datasets/rtatman/english-word-frequency) in order to run the anaytics workbook, it can be downloaded from here (or with the kaggle api)
 
 ### Python Running Nightly Data Pull - Cron Job
-In order to run in automted fashion, you will need to update your crontab file with the path
-to your conda distribution and the code itself in the crontab.txt file
+In order to run in automated fashion, you will need to update your crontab file with the path
+to your conda distribution and the code itself in the crontab.txt file. 
+
+You will also want to update the get_all.sh script with the correct wordlescraper/wordlescraper directory
 
 once that is completed, you can add it to the linux automated cron jobs
 ```
@@ -33,16 +44,16 @@ crontab -l
 ```
 which should add, then display the cron job
 
-### Python Running Jupyter Analytics Notebook  
-
 ## Javascript
+node.js - build using:
 
-### Install Sveltekit
-node.js:
-    see package.json file
-
-### pnpm run dev
-
+```
+npm install
+```
+or optionaly
+```
+pnpm install
+```
 
 # References
 1) ([@wordlestats](https://twitter.com/wordlestats)) Twitter Bot
