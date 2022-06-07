@@ -2,10 +2,10 @@
 This file is meant to gather wordle specific data from various sources
 """
 
-import os, sys
+import os
 import json
-
-from collections.abc import Sequence
+from telnetlib import SE
+from typing import Sequence
 import pandas as pd
 import tweepy
 import pandas as pd
@@ -13,6 +13,19 @@ from bs4 import BeautifulSoup
 import urllib.request
 
 from helpers import get_avg, get_stddev, get_skewness
+
+def gather_all() -> Sequence[pd.DataFrame]:
+    """
+    function meant to pull from all data sources, write to csvs, and return dataframes
+    returns 
+        Tuple(all_words, word_list, tweet_list, df_freq)
+    """
+    all_words = get_allwords()
+    word_list = get_wordlist()
+    tweet_api = get_tweet_auth()
+    tweet_list = get_tweets(tweet_api)
+    df_freq = get_frequency()
+    return (all_words, word_list, tweet_list, df_freq)
 
 def get_allwords(to_file: str='allwords_list.csv') -> pd.DataFrame:
     """ 
@@ -122,8 +135,5 @@ def get_frequency(from_kaggle: bool=False, to_file: str='unigram_freq.csv') -> p
     return df_freq
 
 if __name__=='__main__':
-    all_words = get_allwords()
-    tweet_api = get_tweet_auth('secret.json')
-    tweet_list = get_tweets(tweet_api, first_time=False, to_file='tweet_list.csv')
-    df_freq = get_frequency()
+    all_words, word_list, tweet_list, df_freq = gather_all()
 
