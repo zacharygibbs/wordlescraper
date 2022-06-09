@@ -8,6 +8,10 @@ from typing import Callable
 
 import pandas as pd
 import numpy as np
+import sys, os
+BASEPATH = os.path.split(__file__)[0]
+sys.path.append(BASEPATH)
+
 
 from helpers import get_stats, send_ftp, get_secret_json
 from gather import gather_all
@@ -71,7 +75,7 @@ def get_number_of_matching_all(word_to_check: str, df_allwords: pd.DataFrame)->d
     df_allwords - pd.DataFrame 
         list of all wordle words (words must be in first column of DataFrame or Series)
     """
-    allwords = df_allwords.iloc[:,0]
+    allwords = df_allwords.iloc[:,0].str.upper()
     matching = pd.DataFrame({'matches':[0]*len(allwords)})
     for letter in word_to_check:
         matching['matches'] = matching['matches'] + allwords.str.count(letter)

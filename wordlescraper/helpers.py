@@ -4,29 +4,44 @@ Author - Zach Gibbs 6/8/2022
 
 """
 
-from typing import Sequence
+from typing import Sequence, Union
+import json, os, sys
 import numpy as np
 import pandas as pd
-import json, os
 import ftplib
 
-def get_avg(dfi):
-    #how to count those who did not get it? make them count as a 7? or instead get the average of only the people who did
-    #cols = [i for i in dfi.index if '_X' not in i]
+BASEPATH = os.path.split(__file__)[0]
+sys.path.append(BASEPATH)
+
+def get_avg(dfi: pd.DataFrame)->float:
+    """
+    function to compute the average wordle score
+    note - assumes that pct_X counts as a numeric 7 guesses
+    dfi - dataframe - single row (meant to be run through apply function)
+    """
     cols = dfi.index
     return np.sum([np.float32(dfi.loc[col])/100 * (index + 1) for index,col in enumerate(cols)])
 
-def get_stddev(dfi, avg=None):
-    #how to count those who did not get it? make them count as a 7? or instead get the average of only the people who did
-    #cols = [i for i in dfi.index if '_X' not in i]
-    # sqrt( sum( (x-xbar)^2 / N) )
-    # sqrt( sum(p_i * Number Total * (i - xbar)**2 / Number Total)) = sqrt( sum( p_1 * (i - xbar)**2))
+def get_stddev(dfi: pd.DataFrame(), avg: Union[float, None]=None)->float:
+    """
+    function to compute standard deviation
+    note - assumes that pct_X counts as a numeric 7 guesses
+    dfi - dataframe - single row (meant to be run through apply function)
+    avg - default None
+        if None, averages will be calculated
+    """
     if avg==None:
         avg = get_avg(dfi)
     cols = dfi.index
     return np.sqrt(np.sum([np.float32(dfi.loc[col])/100 * (index + 1 - avg)**2 for index,col in enumerate(cols)]))
 
-def get_skewness(dfi, en, avg=None):
+def get_skewness(dfi: pd.DataFrame, en: int, avg: float=None)->float:
+    """
+    method to calculate skewness
+    dfi - dataframe - single row (meant to be run through apply function)
+    en - int
+        number of items in the distribution
+    """
     if type(avg)==type(None):
         avg = get_avg(dfi)
     cols = dfi.index
@@ -39,13 +54,23 @@ def get_skewness(dfi, en, avg=None):
     return gee1
 
 def match_df_index(dfi, en):
+    """
+    helper method to keep df and i on same index
+    """
     if type(en) == type(pd.DataFrame([])) or type(en)==type(pd.Series([])):
         en = en.loc[dfi.name]
         if type(en)==type(''):
             en = np.float32(en.replace(',',''))
     return en
 
-def get_stats(df, stat1, en=None):
+def get_stats(df: pd.DataFrame, stat1: str, en=None):
+    """
+    function to apply statistics over an entire dataframe
+    df - 
+        DataFrame over which to apply statistics
+    stat1 - str
+        'avg', 'std', 'skewness' function to apply
+    """
     pct_columns = df[[i for i in df.columns if 'pct_' in i]]
     funclist = {
         'avg':get_avg,
@@ -58,8 +83,12 @@ def get_secret_json(from_file: str='secret_web.json')->dict:
     """
     load json from filename
     """
-    with open(from_file, 'r') as f:
-        sec = json.load(f)
+    try:
+        with open(from_file, 'r') as f:
+            sec = json.load(f)
+    except:
+        with open(os.path.join(BASEPATH, from_file), 'r') as f:
+            sec = json.load(f)
     return sec
 
 def send_ftp(
