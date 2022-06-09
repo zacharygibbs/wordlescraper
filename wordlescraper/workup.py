@@ -1,10 +1,26 @@
+"""
+This file contains various functions for performing data workup tasks including
+merging data from various sources and adding features for datascience workup
+Author - Zach Gibbs 6/8/2022
+"""
+
+from typing import Callable
+
 import pandas as pd
 import numpy as np
-#import matplotlib.pyplot as plt
 
-from helpers import get_stats
-from workup import gather_all
+from helpers import get_stats, send_ftp, get_secret_json
+from gather import gather_all
 
+SCRABBLE_LETTER_SCORE = {
+    'A':1, 'B':3, 'C':3, 'D':2, 'E':1, 'F':4,
+    'G':2, 'H':4, 'I':1, 'J':8, 'K':5, 'L':1,
+    'M':3, 'N':1, 'O':1, 'P':3, 'Q':10, 'R':1,
+    'S':1, 'T':1, 'U':1, 'V':4, 'W':4, 'X':8,
+    'Y':4, 'Z':10
+}
+
+VOWELS = ('A','E','I','O', 'U')
 
 def merge_gathered(tweet_list: pd.DataFrame, word_list: pd.DataFrame) -> pd.DataFrame:
     """ 
@@ -46,18 +62,34 @@ def merge_freq(df: pd.DataFrame, df_freq: pd.DataFrame) -> pd.DataFrame:
     df['logfreq'] = np.log10(df['freq'])
     return df
 
-def get_number_of_matching_all(word_to_check, df_allwords):
-    a = df_allwords.iloc[:,0]
-    matching = pd.DataFrame({'matches':[0]*len(a)})
+def get_number_of_matching_all(word_to_check: str, df_allwords: pd.DataFrame)->dict:
+    """ 
+    checks word_to_check to determine how many words in df_allwords match 1, 2, 3, 4, or 5 letters
+    can be used as a metric of a words similarity to other words in the wordle possible word list
+    word_to_check - str
+        inputted word to check
+    df_allwords - pd.DataFrame 
+        list of all wordle words (words must be in first column of DataFrame or Series)
+    """
+    allwords = df_allwords.iloc[:,0]
+    matching = pd.DataFrame({'matches':[0]*len(allwords)})
     for letter in word_to_check:
-        matching['matches'] = matching['matches'] + a.str.count(letter)
+        matching['matches'] = matching['matches'] + allwords.str.count(letter)
     result = matching['matches']\
                 .value_counts()\
                 .reset_index()\
                 .sort_values('index')
     return dict(zip(result['index'], result['matches']))
 
-def merge_num_matches(df, df_allwords):
+def merge_num_matches(df: pd.DataFrame, df_allwords: pd.DataFrame)->pd.DataFrame:
+    """
+    function to synthesize the number of letter matches (get_number_of_matching_all) and execute
+    for all words in df, then merge the results with df
+    df - pd.DataFrame
+        input dataframe (with wordleword column at minimum) to determine matches for
+    df_allwords - pd.DataFrame
+        word list of df to count matching letters against (i.e. all possible wordle words)
+    """
     num_matches = pd.DataFrame({'wordleword': [], 'letter_matches_2':[], 'letter_matches_3':[], 'letter_matches_4':[], 'letter_matches_5':[]})
     for wordleword in df['wordleword'].values:
         matches = get_number_of_matching_all(wordleword, df_allwords)
@@ -74,85 +106,114 @@ def merge_num_matches(df, df_allwords):
     df = df.merge(num_matches, how='left', on='wordleword')
     return df
 
-def duplicate_letters(wordleword):
+def duplicate_letters(wordleword: str)->int:
+    """
+    function to determine number of duplicate letters in a string
+    wordleword - str
+        word to check for duplicates
+    """
     count = 0
     for letter in wordleword:
         if wordleword.count(letter) > 1:
-            count += 0.5
-    return count
+            count += 1
+    return count/2
 
-def merge_duplicate_letters(df):
-    df['duplicate_letters'] = df['wordleword'].apply(duplicate_letters)
-    return df
-
-def get_scrabble_score(wordleword):
-    letter_score = {
-        'A':1, 'B':3, 'C':3, 'D':2, 'E':1, 'F':4,
-        'G':2, 'H':4, 'I':1, 'J':8, 'K':5, 'L':1,
-        'M':3, 'N':1, 'O':1, 'P':3, 'Q':10, 'R':1,
-        'S':1, 'T':1, 'U':1, 'V':4, 'W':4, 'X':8,
-        'Y':4, 'Z':10
-    }
+def get_scrabble_score(wordleword: str)->int:
+    """
+    function to determine a words scrabble score
+    wordleword - str
+        input word to determine score
+    returns
+        score as integer
+    """
     score = 0
     for letter in wordleword:
-        score += letter_score[letter]
+        score += SCRABBLE_LETTER_SCORE[letter]
     return score
 
-def merge_scrabble_score(df):
-    df['scrabblescore'] = df['wordleword'].apply(get_scrabble_score)
-    return df
+def starts_with_vowel(wordleword):
+    "returns 1 if starts with vowel, 0 otherwise"
+    return int(wordleword[0] in VOWELS)
 
-def merge_starts_with_vowel(df):
-    df['starts_with_vowel'] = [int(i[0] in ('A','E','I','O', 'U')) for i in df['wordleword']]
-    return df
+def num_vowels(wordleword):
+    "returns number of vowels in the word"
+    return np.sum([int(j in VOWELS) for j in wordleword])
 
-def merge_num_vowels(df):
-    df['num_vowels'] = [np.sum([int(j in ('A','E','I','O', 'U')) for j in i]) for i in df['wordleword']]
-    return df
+def merge_generic(df: pd.DataFrame, func: Callable, colname: str)-> pd.DataFrame:
+    """
+    generic function to apply a function over the wordleword column
+    df - pd.DataFrame
+        DataFrame that should have 'wordleword' column that func should be applied to
+    func - function
+        function that works on a single wordleword
+    colname - str
+        the resulting string
+    returns
+        dfnew - result of applying function and creating new column - colname
+    """
+    dfnew = df.copy()
+    dfnew[colname] = dfnew['wordleword'].apply(func)
+    return dfnew
 
-def merge_coarse_grain(df):
+def merge_coarse_grain(df: pd.DataFrame)->pd.DataFrame:
+    """
+    function to add some y-variables that aggregate percentages into good, medium, and bad categories
+    where 1,2,3 guesses = good; 4 = medium; and 5, 6, X = bad
+    returns
+        df with columns added - pctCG_good pct_CG_medium pctCG_bad
+    """
+    for col in [i for i in df.columns if 'pct_' in i]:
+        df[col] = df[col].astype(float)
     df['pctCG_good'] = df['pct_1'] + df['pct_2'] + df['pct_3']
     df['pctCG_medium'] = df['pct_4']
     df['pctCG_bad'] = df['pct_5'] + df['pct_6'] + df['pct_X']
     return df
 
-if __name__ == '__main__':
-    all_words, word_list, tweet_list, df_freq = gather_all()
-    df = merge_gathered(tweet_list=tweet_list, word_list=word_list)
+def add_features(
+    df: pd.DataFrame,
+    all_words: pd.DataFrame, 
+    df_freq: pd.DataFrame
+    )-> pd.DataFrame:
+    """
+    function to execute all workup / merge steps to add features
+    df - pd.DataFrame
+        inputted df - must have wordleword column; usually from merged tweets/word_list
+    all_words - pd.DataFrame
+        entire list of possible wordlewords - pd.Series or DataFrame with list in first column
+    df_freq - pd.DataFrame
+        list of 300,000 english words - see gather.get_frequency function
+    returns
+        pd.DataFrame with features added
+    """
     df = merge_freq(df=df, df_freq=df_freq)
+    df = merge_num_matches(df, df_allwords=all_words)
+    df = merge_generic(df, duplicate_letters, 'duplicate_letters')
+    df = merge_generic(df, get_scrabble_score, 'scrabblescore')
+    df = merge_generic(df, num_vowels, 'num_vowels')
+    df = merge_generic(df, starts_with_vowel, 'starts_with_vowel')
+    return df
+
+def gather_and_workup(to_file_csv: str='wordlestats_list.csv', to_file_json: str='wordlestats_list.json'):
+    """
+    Run all gather and workup scripts and write to file
+    """
+    all_words, word_list, tweet_list, df_freq = gather_all(first_time=False)
+    df = merge_gathered(tweet_list=tweet_list, word_list=word_list)
+    df = df.dropna(how='any', axis=0)
+    df = add_features(df, all_words=all_words, df_freq=df_freq)
+    df = merge_coarse_grain(df)
+    df.to_csv(to_file_csv)
+    df.to_json(to_file_json)
+    return df
 
 
-#Work up all words - letter frequency table, words with duplicate letters, other items below?
-# compare 'all words' with the ones played so far
+if __name__ == '__main__':
+    df = gather_and_workup()
+    secret = get_secret_json('secret_web.json')
+    send_ftp(secret['host'], secret['username'], secret['password'])
+    #all_words, word_list, tweet_list, df_freq = gather_all(first_time=False)
+    #df = merge_gathered(tweet_list=tweet_list, word_list=word_list)
+    #df = df.dropna(how='any', axis=0)
+    #df = add_features(df, all_words=all_words, df_freq=df_freq)
+    #df = merge_coarse_grain(df)
 
-
-### Some things that could be done?
-
-#Step 1 - 
-#Enter in your wordle score distribution and find out how you compare to the average. 
-#Create simple javascript app to house this
-
-# Step 2 - statistics
-# metrics - Average; Skewness; # of people who do not get it
-
-# things to check against
-
-#Vowel frequency (which vowels show up more often)
-#Vowel number of (how many vowels are in final answer) - see if this affects how many people get it?
-#Vowel in which position (1st last etc). 
-#Has repeated letters 
-#Starts with vowel?
-#Has U or Y?  or other 'uncommon' letters - common as given by letter frequency #uncommon consonants vs vowels
-#Consonants frequency, consonant positons
-##### check for strange letters; letter frequency in full word set
-
-
-
-perform_workup = False
-
-if perform_workup:
-    fig1, ax1 = plt.subplots(1, 1)
-    ax1.plot(df['date'], df['avg'], 'bo')
-    ax1.plot(df['date'], np.ones(len(df))* df['avg'].mean(), 'k--')
-    ax1.set_ylabel('Avg Number of Guesses')
-    plt.show()

@@ -53,6 +53,7 @@ which should add, then display the cron job
 node.js - build using:
 
 ```
+cd wordle_stats_frontend
 npm install
 ```
 or optionaly

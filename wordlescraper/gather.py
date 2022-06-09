@@ -1,5 +1,6 @@
 """
 This file is meant to gather wordle specific data from various sources
+Author - Zach Gibbs 6/8/2022
 """
 
 import os
@@ -12,18 +13,20 @@ import pandas as pd
 from bs4 import BeautifulSoup
 import urllib.request
 
-from helpers import get_avg, get_stddev, get_skewness
+from helpers import get_secret_json
 
-def gather_all() -> Sequence[pd.DataFrame]:
+def gather_all(first_time: bool) -> Sequence[pd.DataFrame]:
     """
     function meant to pull from all data sources, write to csvs, and return dataframes
+    first_time - bool
+        whether or not you have to pull all tweets or just 10
     returns 
         Tuple(all_words, word_list, tweet_list, df_freq)
     """
     all_words = get_allwords()
     word_list = get_wordlist()
     tweet_api = get_tweet_auth()
-    tweet_list = get_tweets(tweet_api)
+    tweet_list = get_tweets(tweet_api, first_time=first_time)
     df_freq = get_frequency()
     return (all_words, word_list, tweet_list, df_freq)
 
@@ -77,12 +80,13 @@ def get_tweets(api: tweepy.API, first_time: bool=True, to_file: str='tweet_list.
     return tweet_list
 
 
-def get_tweet_auth(auth_secret: str  = 'secret.json') -> tweepy.API:
+def get_tweet_auth(auth_secret: str='secret.json') -> tweepy.API:
     """
-    
+    get 'token' from secret.json file, create Twitter API connection
+    auth_secret
+        should be a json filename that has a 'token' key
     """
-    with open(auth_secret,'r') as f:
-        secret = json.load(f)
+    secret = get_secret_json(auth_secret)
     auth = tweepy.OAuth2BearerHandler(secret['token'])
     api = tweepy.API(auth)
     return api
@@ -102,14 +106,14 @@ def get_wordlist(to_file: str='word_list.csv') -> pd.DataFrame:
     if os.path.exists(to_file):
         word_list_old = pd.read_csv(to_file)
     else:
-        word_list_old = None
+        word_list_old = ()
     tag = soup.find_all("li", recursive=True)
     tag = pd.Series(tag)
     tag = tag.astype(str)
     word_list = tag.str.extract(r"(?P<date>[A-Z][a-z]*\D*\d{2}) - #(?P<wordleid>\d{2,5})[^A-Z]*(?P<wordleword>[A-Z]*)")\
                 .dropna()
     word_list['wordleid'] = word_list["wordleid"].astype("int64")
-    if word_list_old:
+    if len(word_list_old)>0:
         word_list = pd.concat([word_list, word_list_old]).drop_duplicates()
     else:
         word_list = word_list.drop_duplicates()

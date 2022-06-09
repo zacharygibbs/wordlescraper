@@ -1,5 +1,14 @@
+"""
+Various helper functions - 
+Author - Zach Gibbs 6/8/2022
+
+"""
+
+from typing import Sequence
 import numpy as np
 import pandas as pd
+import json, os
+import ftplib
 
 def get_avg(dfi):
     #how to count those who did not get it? make them count as a 7? or instead get the average of only the people who did
@@ -45,3 +54,38 @@ def get_stats(df, stat1, en=None):
     }
     return pct_columns.apply(funclist[stat1], axis=1)
 
+def get_secret_json(from_file: str='secret_web.json')->dict:
+    """
+    load json from filename
+    """
+    with open(from_file, 'r') as f:
+        sec = json.load(f)
+    return sec
+
+def send_ftp(
+                host: str, 
+                username: str, 
+                password: str, 
+                filenames: Sequence=("wordlestats_list.csv", "wordlestats_list.json"), 
+                upload_path: str='public_html/wordle-stats-sciencey'
+            )->None:
+    """
+    Based on example - https://www.geeksforgeeks.org/how-to-download-and-upload-files-in-ftp-server-using-python/
+    sends a list of files via FTP to a web location
+    """
+    # Connect FTP Server
+    ftp_server = ftplib.FTP(host, username, password)
+    # force UTF-8 encoding
+    ftp_server.encoding = "utf-8"
+    # Enter File Name with Extension
+    #filenames = ["wordlestats_list.csv", "wordlestats_list.json"]
+    upload_path = 'public_html/wordle-stats-sciencey'
+    # Read file in binary mode
+    for filename in filenames:
+        with open(filename, "rb") as file:
+            # Command for Uploading the file "STOR filename"
+            ftp_server.storbinary(f"STOR {os.path.join(upload_path,filename)}", file)
+    # Get list of files
+    ftp_server.dir(os.path.join(upload_path,filename))
+    # Close the Connection
+    ftp_server.quit()
