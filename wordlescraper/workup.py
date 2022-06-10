@@ -6,6 +6,7 @@ Author - Zach Gibbs 6/8/2022
 
 from typing import Callable
 
+import joblib
 import pandas as pd
 import numpy as np
 import sys, os
@@ -197,22 +198,35 @@ def add_features(
     df = merge_generic(df, starts_with_vowel, 'starts_with_vowel')
     return df
 
-def gather_and_workup(to_file_csv: str='wordlestats_list.csv', to_file_json: str='wordlestats_list.json'):
+def gather_and_workup(to_file_csv: str='wordlestats_list.csv', to_file_json: str='wordlestats_list.json', first_time: bool=False):
     """
     Run all gather and workup scripts and write to file
     """
-    all_words, word_list, tweet_list, df_freq = gather_all(first_time=False)
+    all_words, word_list, tweet_list, df_freq = gather_all(first_time=first_time)
     df = merge_gathered(tweet_list=tweet_list, word_list=word_list)
     df = df.dropna(how='any', axis=0)
     df = add_features(df, all_words=all_words, df_freq=df_freq)
     df = merge_coarse_grain(df)
+    df = add_predicted_avg(df)
     df.to_csv(to_file_csv)
     df.to_json(to_file_json)
     return df
 
+def add_predicted_avg(df: pd.DataFrame)->pd.DataFrame:
+    """
+    add ridge regression model prediction for average
+    """
+    scl_x = joblib.load('scl_x.pickle')
+    scl_y = joblib.load('scl_y.pickle')
+    model = joblib.load('ridge_model.pickle')
+    df_trial = df.copy()#[['wordleword', 'logfreq', 'duplicate_letters', 'scrabblescore']]
+    X_trial = df_trial[['logfreq', 'duplicate_letters', 'scrabblescore']]
+    X_scl_trial = scl_x.transform(X_trial)
+    df_trial['avg_predicted'] = scl_y.inverse_transform(model.predict(X_scl_trial)).transpose()[0,:]
+    return df_trial
 
 if __name__ == '__main__':
-    df = gather_and_workup()
+    df = gather_and_workup(first_time=False)
     secret = get_secret_json('secret_web.json')
     send_ftp(secret['host'], secret['username'], secret['password'])
     #all_words, word_list, tweet_list, df_freq = gather_all(first_time=False)
