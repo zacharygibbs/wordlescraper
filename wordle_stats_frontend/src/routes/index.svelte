@@ -23,18 +23,22 @@
     import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'sveltestrap';
 
     import * as d3 from 'd3';
-    import * as Statistics from 'statistics';
+    //import * as Statistics from 'statistics';
 
 
     let df = {};
-    let selectedItemTimeSeries = null;
+    let selectedItemChartx = null;
+    let selectedItemCharty = null;
     let isMounted = false;
-    const KEYLISTDEFAULT = ['avg', 'stddev'];
-    let keylist = KEYLISTDEFAULT;
+    const KEYLISTDEFAULTY = ['avg', 'stddev', 'pctCG_good', 'pctCG_medium', 'pctCG_bad'];
+    let keylisty = KEYLISTDEFAULTY;
     const EXCLUDEKEY = ['wordleid', 'wordleword', 'date', 'index'];
+    const KEYLISTDEFAULTX = ['wordleid', 'logfreq', 'scrabblescore', 'duplicate_letters', 'letter_matches_2', 'letter_matches_3', 'letter_matches_4', 'letter_matches_5', 'num_vowels', 'starts_with_vowel', 'freq'];
+    let keylistx = KEYLISTDEFAULTX;
+    const EXCLUDEKEYX = ['date', 'index', 'avg', 'stddev', 'pctCG_good', 'pctCG_medium', 'pctCG_bad', 'pct_1', 'pct_2', 'pct_3', 'pct_4', 'pct_5', 'pct_6', 'pct_X'];
+    const CHARTMODE = 'markers'
     let userAvg;
     let avgAvg;
-    debugger;
 
     let statsNumbersstrs = ["1","2","3","4","5","6","X"];
     let statsNumbers = [1,2,3,4,5,6,7];
@@ -44,6 +48,7 @@
     let userStatsnum = [0, 0, 0, 1, 0, 0, 0];
     let userStatspct = [0, 0, 0, 0, 0, 0, 0];
     let userTotal;
+    
 
     onMount(async () => {
         if(Array.isArray(JSON.parse(localStorage.getItem('userStatsnum')))){
@@ -53,23 +58,23 @@
             userStatsnum = [0,0,0,1,0,0,0];
         }
         
-        d3.json("wordlestats_list.json")
+        d3.json('wordlestats_list.json')
         //d3.json("http://coolsciencey.com/data/wordlestats_list.json")
         .then((data) =>{
                    console.log(data); // [{"Hello": "world"}, …]
                    df = data
                  })
         isMounted=true;
-        console.log('here', selectedItemTimeSeries)
-        selectedItemTimeSeries = 'avg';
+        selectedItemCharty = 'avg';
+        selectedItemChartx = 'wordleid';
         updateValue()
 	});
 
     function updateValue() {
-        let fs = document.getElementById('form-select')
-        console.log('here2', selectedItemTimeSeries)
-        setSelectedValue(fs, 'avg');
-        console.log('here3', selectedItemTimeSeries)
+        let fsy = document.getElementById('form-selecty')
+        setSelectedValue(fsy, 'avg');
+        let fsx = document.getElementById('form-selectx')
+        setSelectedValue(fsx, 'wordleid');
     }
 
     
@@ -78,13 +83,16 @@
     $: {
         
         if(Object.keys(df).length>0){
-            console.log(df)
             let newdf = {};
-            keylist = KEYLISTDEFAULT;
+            keylisty = KEYLISTDEFAULTY;
+            keylistx = KEYLISTDEFAULTX;
             for(let i in Object.keys(df)){
                 let key = Object.keys(df)[i];
-                if(!keylist.includes(key) & !EXCLUDEKEY.includes(key)){
-                    keylist.push(key)
+                if(!keylisty.includes(key) & !EXCLUDEKEY.includes(key)){
+                    keylisty.push(key)
+                }
+                if(!keylistx.includes(key) & !EXCLUDEKEYX.includes(key)){
+                    keylistx.push(key)
                 }
                 let newseries = [];
                 for(let j in Object.keys(df[key])){
@@ -116,7 +124,6 @@
     }
 
     $: {
-        console.log('here4', selectedItemTimeSeries)
         if(isMounted){
             let trace1 = {
                 y: statsNumbers,
@@ -166,9 +173,10 @@
     $: {
         if(isMounted){
             let trace1 = {
-                x: df['wordleid'],
-                y: df[selectedItemTimeSeries],
+                x: df[selectedItemChartx],
+                y: df[selectedItemCharty],
                 text: df['wordleword'],
+                mode: CHARTMODE,
                 type: 'scatter',
             };
 
@@ -176,10 +184,10 @@
 
             let layout = {
                 xaxis: {
-                    title: 'wordleid'
+                    title: selectedItemChartx
                 },
                 yaxis: {
-                    title: selectedItemTimeSeries,
+                    title: selectedItemCharty
                 },
                 title: '',
                 displayModeBar: false
@@ -261,15 +269,28 @@
                         </Dropdown> 
                     </div> -->
                 </TabPane>
-                <TabPane tabId="tab-time" tab="Time Distribution">
+                <TabPane tabId="tab-time" tab="Charts">
                     <FormGroup>
-                        <Label for="form-select">Select</Label>
-                        <Input type="select" name="form-select" id="form-select" bind:value={selectedItemTimeSeries}>
-                            {#each keylist as key}
-                                <option>{key}</option>
-                            {/each}
-                        </Input>
+                        <Row>
+                            <Col>
+                                <Label for="form-selecty">Select y</Label>
+                                <Input type="select" name="form-selecty" id="form-selecty" bind:value={selectedItemCharty}>
+                                    {#each keylisty as key}
+                                        <option>{key}</option>
+                                    {/each}
+                                </Input>
+                            </Col>
+                            <Col>
+                                <Label for="form-selectx">Select x</Label>
+                                <Input type="select" name="form-selectx" id="form-selectx" bind:value={selectedItemChartx}>
+                                    {#each keylistx as key}
+                                        <option>{key}</option>
+                                    {/each}
+                                </Input>
+                            </Col>
+                        </Row>
                       </FormGroup>
+                        
                     <div id='plotly-chart-time' style="width:100%;height:90%;"></div>
                 </TabPane>
             </TabContent>
