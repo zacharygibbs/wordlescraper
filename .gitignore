@@ -3,7 +3,7 @@ secret*.json
 *_list.json
 log.txt
 unigram*
-*.pickle
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
