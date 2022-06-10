@@ -36,7 +36,8 @@
     const KEYLISTDEFAULTX = ['wordleid', 'logfreq', 'scrabblescore', 'duplicate_letters', 'letter_matches_2', 'letter_matches_3', 'letter_matches_4', 'letter_matches_5', 'num_vowels', 'starts_with_vowel', 'freq'];
     let keylistx = KEYLISTDEFAULTX;
     const EXCLUDEKEYX = ['date', 'index', 'avg', 'stddev', 'pctCG_good', 'pctCG_medium', 'pctCG_bad', 'pct_1', 'pct_2', 'pct_3', 'pct_4', 'pct_5', 'pct_6', 'pct_X'];
-    const CHARTMODE = 'markers'
+    const CHARTMODE = 'markers';
+    const VIOLINVARS = ['duplicate_letters', 'num_vowels', 'starts_with_vowel'];
     let userAvg;
     let avgAvg;
 
@@ -172,15 +173,41 @@
 
     $: {
         if(isMounted){
+            let charttype
+            if(VIOLINVARS.includes(selectedItemChartx)){
+                charttype ='violin'
+            }
+            else{
+                charttype = 'scatter'
+            }
             let trace1 = {
                 x: df[selectedItemChartx],
                 y: df[selectedItemCharty],
                 text: df['wordleword'],
                 mode: CHARTMODE,
-                type: 'scatter',
+                type: charttype,
+                name: 'Global'
             };
+            let data;
+            let trace2;
+            console.log(keylisty)
+            console.log(selectedItemCharty+'_predicted')
+            if(keylisty.includes(selectedItemCharty+'_predicted')){
+                trace2 = {
+                    x: df[selectedItemChartx],
+                    y: df[selectedItemCharty+'_predicted'],
+                    text: df['wordleword'],
+                    mode: CHARTMODE,
+                    type: charttype,
+                    name: 'Predicted'
+                };
+                data = [trace1, trace2];
+            }
+            else{
+                data = [trace1];
+            }
 
-            let data = [trace1];
+            
 
             let layout = {
                 xaxis: {
