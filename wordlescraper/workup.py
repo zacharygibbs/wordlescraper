@@ -76,7 +76,7 @@ def get_number_of_matching_all(word_to_check: str, df_allwords: pd.DataFrame)->d
     df_allwords - pd.DataFrame 
         list of all wordle words (words must be in first column of DataFrame or Series)
     """
-    allwords = df_allwords.iloc[:,0].str.upper()
+    allwords = df_allwords#.iloc[:,0].str.upper()
     matching = pd.DataFrame({'matches':[0]*len(allwords)})
     for letter in word_to_check:
         matching['matches'] = matching['matches'] + allwords.str.count(letter)

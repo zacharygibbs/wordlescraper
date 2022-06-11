@@ -40,6 +40,7 @@ def get_allwords(to_file: str='allwords_list.csv') -> pd.DataFrame:
         'https://raw.githubusercontent.com/csokolove/wordle-word-list/main/wordlist.csv',
         header=None
     )
+    all_words = all_words.iloc[:,0].str.upper()
     all_words.to_csv(to_file, index=False)
     return all_words
     
