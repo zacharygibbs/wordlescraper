@@ -3,7 +3,7 @@ This file is meant to gather wordle specific data from various sources
 Author - Zach Gibbs 6/8/2022
 """
 
-import os
+import os, sys
 import json
 from telnetlib import SE
 from typing import Sequence
@@ -12,6 +12,9 @@ import tweepy
 import pandas as pd
 from bs4 import BeautifulSoup
 import urllib.request
+
+BASEPATH = os.path.split(__file__)[0]
+sys.path.append(BASEPATH)
 
 from helpers import get_secret_json
 
@@ -134,7 +137,10 @@ def get_frequency(from_kaggle: bool=False, to_file: str='unigram_freq.csv') -> p
     """
     if from_kaggle:
         os.system('sh get_kaggle_frequency_dataset.sh')
-    df_freq = pd.read_csv(to_file)
+    try:
+        df_freq = pd.read_csv(to_file)
+    except:
+        df_freq = pd.read_csv(os.path.join(BASEPATH, to_file))
     df_freq['word'] = df_freq['word'].str.upper()
     df_freq = df_freq.rename(columns={'word':'wordleword', 'count':'freq'})
     return df_freq

@@ -216,9 +216,10 @@ def add_predicted_avg(df: pd.DataFrame)->pd.DataFrame:
     """
     add ridge regression model prediction for average
     """
-    scl_x = joblib.load('scl_x.pickle')
-    scl_y = joblib.load('scl_y.pickle')
-    model = joblib.load('ridge_model.pickle')
+    bp = '' if os.path.exists('scl_x.pickle') else BASEPATH
+    scl_x = joblib.load(os.path.join(bp, 'scl_x.pickle'))
+    scl_y = joblib.load(os.path.join(bp, 'scl_y.pickle'))
+    model = joblib.load(os.path.join(bp, 'ridge_model.pickle'))
     df_trial = df.copy()#[['wordleword', 'logfreq', 'duplicate_letters', 'scrabblescore']]
     X_trial = df_trial[['logfreq', 'duplicate_letters', 'scrabblescore']]
     X_scl_trial = scl_x.transform(X_trial)
