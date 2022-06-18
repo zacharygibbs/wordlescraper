@@ -1,7 +1,4 @@
 <svelte:head>
-    <!-- <link rel='stylesheet' href='chart.css'/> 
-    <script src="https://cdn.plot.ly/plotly-2.12.1.min.js"></script>
-    -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js" type="text/javascript"></script>
 </svelte:head>
 
@@ -329,7 +326,7 @@
 Data Source: <a href="https://twitter.com/wordlestats">@wordlestats</a> Twitter Account<br>
 Data Source2: <a href="http://screenrant.com/wordle-answers-updated-word-puzzle-guide/">screenrant.com</a> web page<br>
 Note - "avg" metrics use 7 as numerical representation for number of guesses for "X", or if you do not get it correct.
-<Styles></Styles>
+<!-- <Styles/> -->
 
 
 
