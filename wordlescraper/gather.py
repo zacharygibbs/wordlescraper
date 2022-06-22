@@ -135,7 +135,7 @@ def get_frequency(from_kaggle: bool=False, to_file: str='unigram_freq.csv') -> p
     returns
         df_freq - frequency dataset
     """
-    if from_kaggle:
+    if from_kaggle or not os.path.exists(to_file):
         os.system('sh get_kaggle_frequency_dataset.sh')
     try:
         df_freq = pd.read_csv(to_file)
