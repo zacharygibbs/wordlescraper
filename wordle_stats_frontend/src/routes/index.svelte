@@ -17,16 +17,20 @@
     import { Styles, Col, Container, Row } from 'sveltestrap';
     import { Button, Input, FormGroup, Label} from 'sveltestrap';
     import { TabContent, TabPane } from 'sveltestrap';
-    import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'sveltestrap';
 
     import * as d3 from 'd3';
     //import * as Statistics from 'statistics';
+    import { 
+        df,
+        isMounted,
 
-
-    let df = {};
+    } from '../stores.js'
+    
+    // main variables
+    //let df = {};// store
+    // - charts.svelte
     let selectedItemChartx = null;
     let selectedItemCharty = null;
-    let isMounted = false;
     const KEYLISTDEFAULTY = ['avg', 'stddev', 'pctCG_good', 'pctCG_medium', 'pctCG_bad'];
     let keylisty = KEYLISTDEFAULTY;
     const EXCLUDEKEY = ['wordleid', 'wordleword', 'date', 'index'];
@@ -35,9 +39,10 @@
     const EXCLUDEKEYX = ['date', 'index', 'avg', 'stddev', 'pctCG_good', 'pctCG_medium', 'pctCG_bad', 'pct_1', 'pct_2', 'pct_3', 'pct_4', 'pct_5', 'pct_6', 'pct_X'];
     const CHARTMODE = 'markers';
     const VIOLINVARS = ['duplicate_letters', 'num_vowels', 'starts_with_vowel'];
+
+    // - distribution.svelte
     let userAvg;
     let avgAvg;
-
     let statsNumbersstrs = ["1","2","3","4","5","6","X"];
     let statsNumbers = [1,2,3,4,5,6,7];
     let avgStatsnum = [0, 0, 0, 0, 0, 0, 0];
@@ -60,9 +65,9 @@
         //d3.json("http://coolsciencey.com/data/wordlestats_list.json")
         .then((data) =>{
                    console.log(data); // [{"Hello": "world"}, …]
-                   df = data
+                   $df = data;
                  })
-        isMounted=true;
+        $isMounted=true;
         selectedItemCharty = 'avg';
         selectedItemChartx = 'wordleid';
         updateValue()
@@ -79,13 +84,12 @@
     
 
     $: {
-        
-        if(Object.keys(df).length>0){
+        if(Object.keys($df).length>0){
             let newdf = {};
             keylisty = KEYLISTDEFAULTY;
             keylistx = KEYLISTDEFAULTX;
-            for(let i in Object.keys(df)){
-                let key = Object.keys(df)[i];
+            for(let i in Object.keys($df)){
+                let key = Object.keys($df)[i];
                 if(!keylisty.includes(key) & !EXCLUDEKEY.includes(key)){
                     keylisty.push(key)
                 }
@@ -93,9 +97,9 @@
                     keylistx.push(key)
                 }
                 let newseries = [];
-                for(let j in Object.keys(df[key])){
-                    let key2 = Object.keys(df[key])[j]
-                    newseries.push(df[key][key2]);
+                for(let j in Object.keys($df[key])){
+                    let key2 = Object.keys($df[key])[j]
+                    newseries.push($df[key][key2]);
                 }
                 newdf[key] = newseries;
                 if(key=='date'){
@@ -107,9 +111,9 @@
                    )
                 }
             }
-            df = newdf;
+            $df = newdf;
             avgStatsnum = statsNumbersstrs.map((val, ind) =>{
-                return dotprod(df, 'pct_' + val, 'numresults') / 100
+                return dotprod($df, 'pct_' + val, 'numresults') / 100
             })
 
             avgTotal = d3.sum(avgStatsnum)
@@ -122,7 +126,7 @@
     }
 
     $: {
-        if(isMounted){
+        if($isMounted){
             let trace1 = {
                 y: statsNumbers,
                 x: userStatspct,
@@ -169,7 +173,7 @@
     }
 
     $: {
-        if(isMounted){
+        if($isMounted){
             let charttype
             if(VIOLINVARS.includes(selectedItemChartx)){
                 charttype ='violin'
@@ -178,22 +182,20 @@
                 charttype = 'scatter'
             }
             let trace1 = {
-                x: df[selectedItemChartx],
-                y: df[selectedItemCharty],
-                text: df['wordleword'],
+                x: $df[selectedItemChartx],
+                y: $df[selectedItemCharty],
+                text: $df['wordleword'],
                 mode: CHARTMODE,
                 type: charttype,
                 name: 'Global'
             };
             let data;
             let trace2;
-            console.log(keylisty)
-            console.log(selectedItemCharty+'_predicted')
             if(keylisty.includes(selectedItemCharty+'_predicted')){
                 trace2 = {
-                    x: df[selectedItemChartx],
-                    y: df[selectedItemCharty+'_predicted'],
-                    text: df['wordleword'],
+                    x: $df[selectedItemChartx],
+                    y: $df[selectedItemCharty+'_predicted'],
+                    text: $df['wordleword'],
                     mode: CHARTMODE,
                     type: charttype,
                     name: 'Predicted'
@@ -222,7 +224,7 @@
     }
 
     $:{
-        if(isMounted){
+        if($isMounted){
             userTotal = sum(userStatsnum);
             localStorage.setItem('userStatsnum', JSON.stringify(userStatsnum));
         } 
@@ -239,12 +241,6 @@
 
 </script>
 <Container>
-    <Row>
-        <h1>Wordle-Stats-Sciencey</h1>
-        <br>
-        <span><img src="favicon.png" width="20" alt=''/><i>Created in Svelte</i></span> 
-        
-    </Row>
     <Row>
         <Col>
             <table>
@@ -323,9 +319,6 @@
         
     </Row>
 </Container>
-Data Source: <a href="https://twitter.com/wordlestats">@wordlestats</a> Twitter Account<br>
-Data Source2: <a href="http://screenrant.com/wordle-answers-updated-word-puzzle-guide/">screenrant.com</a> web page<br>
-Note - "avg" metrics use 7 as numerical representation for number of guesses for "X", or if you do not get it correct.
 <!-- <Styles/> -->
 
 
