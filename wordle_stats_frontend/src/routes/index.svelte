@@ -27,7 +27,7 @@
     import { onMount } from "svelte";
     import { Styles, Col, Container, Row } from 'sveltestrap';
     import { Button, Input, FormGroup, Label} from 'sveltestrap';
-    import { Spinner } from 'sveltestrap';
+    import { Spinner, Icon } from 'sveltestrap';
     import { Table } from 'sveltestrap';
 
     import * as d3 from 'd3';
@@ -43,8 +43,6 @@
     
     const CHARTITEMS = ['avg', 'logfreq', 'scrabblescore', 'duplicate_letters'];
 
-    //{"wordleword":"GLADE","freq":1168016,"logfreq":6.067448792,"letter_matches_2":742.0,"letter_matches_3":359.0,"letter_matches_4":66.0,"letter_matches_5":7.0,"duplicate_letters":0.0,"scrabblescore":7,"num_vowels":2,"starts_with_vowel":0,"avg_predicted":4.0544637434}
-
     onMount(async () => {
         load_data_if_not($df)
             .then((data) =>{
@@ -54,6 +52,12 @@
             })
         $isMounted=true;
 	});
+
+    const handleKeydown = (event) => {
+        if(event.key=='Enter'){
+            validate_submit()
+        }
+    }
 
     const update_chart = () => {
         CHARTITEMS.forEach((selectedItemCharty, index, arr) => {
@@ -159,9 +163,15 @@ const validate_submit = () =>{
 
 <Container>
     <Row>
+        <b>Instructions:</b> Type a 5 letter word, if it's in the wordle word list, will return Predicted Avg Score along with the predictor values used in the model. <br>
+        logfreq - frequency of word's use in english language<br>
+        scrabblescore - number of points the word would give in Scrabble<br>
+        duplicate_letters - how many sets of duplicate letters the word has<br>
+    </Row>
+    <Row>
         <Col xs="7" scrolly="false">
             <FormGroup>
-                <input type="text" bind:value={enteredWord} minlength="5" maxlength="5"/>
+                <input type="text" bind:value={enteredWord} minlength="5" maxlength="5" on:keydown={handleKeydown}/>
                 <Button on:click={validate_submit}>Submit</Button>
                 {#if isLoading}
                     <Spinner color="primary" /> Loading - Can take 10 or 15 seconds<br>    
@@ -252,8 +262,6 @@ const validate_submit = () =>{
             
             </Table>
 
-        </Col>
-        <Col>
             {#each CHARTITEMS as chartitem, index}
                 <Row>
                     <Col>

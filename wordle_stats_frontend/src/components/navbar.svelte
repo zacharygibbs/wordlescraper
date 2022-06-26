@@ -13,7 +13,22 @@
         DropdownItem
     } from 'sveltestrap';
     import { Offcanvas, Modal } from 'sveltestrap';
-  
+    import {onMount} from 'svelte';
+    let hostname = ''
+    onMount(async () => {
+        hostname = window.location.hostname;
+	});
+    
+
+    const assemble_url = (route, hostname, subdir='wordle-stats-sciencey') => {
+        if(hostname == 'localhost' | hostname == 'localhost:3000'){
+            return route
+        }
+        else{
+            return subdir + route
+        }
+
+    }
 
     // navbar variables
     let isOpen = false;
@@ -32,13 +47,13 @@
     <Collapse {isOpen} navbar expand="md" on:update={handleUpdate}>
         <Nav class="ms-auto" navbar>
         <NavItem>
-            <NavLink href="/">Predictive Model</NavLink>
+            <NavLink href="{assemble_url("/", hostname)}">Predictive Model</NavLink>
         </NavItem>
         <NavItem>
-            <NavLink href="/distribution">Distribution</NavLink>
+            <NavLink href="{assemble_url("/distribution", hostname)}">Distribution</NavLink>
         </NavItem>
         <NavItem>
-            <NavLink href="/charts">Charts</NavLink>
+            <NavLink href="{assemble_url("/charts", hostname)}">Charts</NavLink>
         </NavItem>
         <NavItem>
             <NavLink href="https://github.com/zacharygibbs/wordlescraper" target="_blank">GitHub</NavLink>
@@ -56,7 +71,7 @@
         Application to gather and display daily wordle statistics as gathered from various sources.
         This application has three main tasks:
         <ul>
-            <li>leverage data science model for predicting average word score</li>
+            <li>leverage data science model for predicting average word score ([<a href="https://github.com/zacharygibbs/wordlescraper/blob/main/WordleStatsAnalytics.ipynb">data science workup here</a>))</li>
             <li>compare user score distribution to global metrics as gathered by this app</li>
             <li>chart daily average score as a function of various word characterizers & time</li>
         </ul>
