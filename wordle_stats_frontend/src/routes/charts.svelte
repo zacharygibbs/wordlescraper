@@ -6,7 +6,8 @@
     import { 
         setSelectedValue, 
         load_data_if_not,
-        transform_df_to_obj_array 
+        transform_df_to_obj_array,
+        CHARTMODE
     } from './helpers.js'
 
     import { 
@@ -24,7 +25,6 @@
     
     let selectedItemChartx = null;
     let selectedItemCharty = null;
-    const CHARTMODE = 'markers';
     const VIOLINVARS = ['duplicate_letters', 'num_vowels', 'starts_with_vowel'];
     let keylistx = [];
     let keylisty = [];

@@ -9,7 +9,7 @@ export const KEYLISTDEFAULTY = ['avg', 'stddev', 'pctCG_good', 'pctCG_medium', '
 export const EXCLUDEKEY = ['wordleid', 'wordleword', 'date', 'index'];
 export const KEYLISTDEFAULTX = ['wordleid', 'logfreq', 'scrabblescore', 'duplicate_letters', 'letter_matches_2', 'letter_matches_3', 'letter_matches_4', 'letter_matches_5', 'num_vowels', 'starts_with_vowel', 'freq'];
 export const EXCLUDEKEYX = ['date', 'index', 'avg', 'stddev', 'pctCG_good', 'pctCG_medium', 'pctCG_bad', 'pct_1', 'pct_2', 'pct_3', 'pct_4', 'pct_5', 'pct_6', 'pct_X'];
-
+export const CHARTMODE = 'markers';
 export const dotprod = (df, var1, var2) => {
     return df[var1].reduce(
         (total, curval, curind) => {
