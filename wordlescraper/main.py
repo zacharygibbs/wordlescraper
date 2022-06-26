@@ -1,5 +1,6 @@
 from typing import Union
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 import pandas as pd
 import sys, os
@@ -14,9 +15,32 @@ df_freq = get_frequency()
 
 app = FastAPI()
 
+origins = [
+    "http://coolsciencey.com",
+    "https://coolsciencey.com",
+    "http://www.coolsciencey.com",
+    "https://www.coolsciencey.com",
+    "http://localhost",
+    "http://localhost:8000",
+    "http://localhost:3000"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
+
+@app.get("/favicon.ico")
+def get_favorico():
+    return {'Hello':'World'}
 
 @app.get('/wordleword/{wordleword}')
 def predict_wordlescore(wordleword: str):
@@ -33,7 +57,3 @@ def predict_wordlescore(wordleword: str):
     df = add_features(df, all_words, df_freq)
     df = add_predicted_avg(df)
     return df.iloc[0].to_json()#{'wordleword': df[0, 'wordleword'], 'avg_predicted': df.iloc[0,0]}
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
