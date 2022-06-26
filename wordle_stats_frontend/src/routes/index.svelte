@@ -3,87 +3,51 @@
 </svelte:head>
 
 <script>
-    // possible things to do
-    //  add 'average' line for User and Global stats
-    //  add distrib?
-    //  add average / skewness?
-    //  add dropdown to choose date, will show word and date
-    //  add cookie to remember user stats?   
-    // time series chart to show distribution 
-    // get better worlde winne website (https://screenrant.com/wordle-answers-updated-word-puzzle-guide/)
-    import { sum, dotprod, setSelectedValue, calcAvg } from './helpers.js'
+    /*
+    Called index, but this is the predictive model
+    want to have Text entry for user w/ submit button to get avg estimated, also return if that word has ever
+    been used, what date, an what the score was
+    Also, include chart w/ data poitns for predictors and highlighted point showing where this new word is.
+    */
+    import { 
+        load_data_if_not,
+        transform_df_to_obj_array 
+    } from './helpers.js'
+
+    import { 
+        df,
+        isMounted,
+    } from '../stores.js'
+
+    import {
+        getPrediction
+    } from './_model_prediction_api'
 
     import { onMount } from "svelte";
     import { Styles, Col, Container, Row } from 'sveltestrap';
     import { Button, Input, FormGroup, Label} from 'sveltestrap';
-    import { TabContent, TabPane } from 'sveltestrap';
+    import { Spinner } from 'sveltestrap';
 
     import * as d3 from 'd3';
-    //import * as Statistics from 'statistics';
-    import { 
-        df,
-        isMounted,
 
-    } from '../stores.js'
+    $isMounted = false;
     
-    // main variables
-    //let df = {};// store
-    // - charts.svelte
-    let selectedItemChartx = null;
-    let selectedItemCharty = null;
-    const KEYLISTDEFAULTY = ['avg', 'stddev', 'pctCG_good', 'pctCG_medium', 'pctCG_bad'];
-    let keylisty = KEYLISTDEFAULTY;
-    const EXCLUDEKEY = ['wordleid', 'wordleword', 'date', 'index'];
-    const KEYLISTDEFAULTX = ['wordleid', 'logfreq', 'scrabblescore', 'duplicate_letters', 'letter_matches_2', 'letter_matches_3', 'letter_matches_4', 'letter_matches_5', 'num_vowels', 'starts_with_vowel', 'freq'];
-    let keylistx = KEYLISTDEFAULTX;
-    const EXCLUDEKEYX = ['date', 'index', 'avg', 'stddev', 'pctCG_good', 'pctCG_medium', 'pctCG_bad', 'pct_1', 'pct_2', 'pct_3', 'pct_4', 'pct_5', 'pct_6', 'pct_X'];
-    const CHARTMODE = 'markers';
-    const VIOLINVARS = ['duplicate_letters', 'num_vowels', 'starts_with_vowel'];
-
-    // - distribution.svelte
-    let userAvg;
-    let avgAvg;
-    let statsNumbersstrs = ["1","2","3","4","5","6","X"];
-    let statsNumbers = [1,2,3,4,5,6,7];
-    let avgStatsnum = [0, 0, 0, 0, 0, 0, 0];
-    let avgStatspct = [0, 0, 0, 0, 0, 0, 0];
-    let avgTotal;
-    let userStatsnum = [0, 0, 0, 1, 0, 0, 0];
-    let userStatspct = [0, 0, 0, 0, 0, 0, 0];
-    let userTotal;
-    
+    let enteredWord;
+    let isLoading = false;
+    let scorePredicted;
+    let apiResult;
 
     onMount(async () => {
-        if(Array.isArray(JSON.parse(localStorage.getItem('userStatsnum')))){
-            userStatsnum = JSON.parse(localStorage.getItem('userStatsnum')); // undefined
-        }
-        else{
-            userStatsnum = [0,0,0,1,0,0,0];
-        }
-        
-        d3.json('wordlestats_list.json')
-        //d3.json("http://coolsciencey.com/data/wordlestats_list.json")
-        .then((data) =>{
-                   console.log(data); // [{"Hello": "world"}, …]
-                   $df = data;
-                 })
+        load_data_if_not($df)
+            .then((data) =>{
+                console.log(data); // [{"Hello": "world"}, …]
+                let result = transform_df_to_obj_array(data);
+                $df = result['df']
+            })
         $isMounted=true;
-        selectedItemCharty = 'avg';
-        selectedItemChartx = 'wordleid';
-        updateValue()
 	});
 
-    function updateValue() {
-        let fsy = document.getElementById('form-selecty')
-        setSelectedValue(fsy, 'avg');
-        let fsx = document.getElementById('form-selectx')
-        setSelectedValue(fsx, 'wordleid');
-    }
-
-    
-    
-
-    $: {
+/*    $: {
         if(Object.keys($df).length>0){
             let newdf = {};
             keylisty = KEYLISTDEFAULTY;
@@ -171,167 +135,53 @@
             Plotly.newPlot(PLOTLYDOM, data, layout);
         }
     }
+*/
 
-    $: {
-        if($isMounted){
-            let charttype
-            if(VIOLINVARS.includes(selectedItemChartx)){
-                charttype ='violin'
-            }
-            else{
-                charttype = 'scatter'
-            }
-            let trace1 = {
-                x: $df[selectedItemChartx],
-                y: $df[selectedItemCharty],
-                text: $df['wordleword'],
-                mode: CHARTMODE,
-                type: charttype,
-                name: 'Global'
-            };
-            let data;
-            let trace2;
-            if(keylisty.includes(selectedItemCharty+'_predicted')){
-                trace2 = {
-                    x: $df[selectedItemChartx],
-                    y: $df[selectedItemCharty+'_predicted'],
-                    text: $df['wordleword'],
-                    mode: CHARTMODE,
-                    type: charttype,
-                    name: 'Predicted'
-                };
-                data = [trace1, trace2];
-            }
-            else{
-                data = [trace1];
-            }
+const validate_submit = () =>{
+    console.log(enteredWord)
+    isLoading = true;
+    getPrediction(enteredWord).then(data => {
+        apiResult = data;
+        isLoading = false;
+    })
 
-            
-
-            let layout = {
-                xaxis: {
-                    title: selectedItemChartx
-                },
-                yaxis: {
-                    title: selectedItemCharty
-                },
-                title: '',
-                displayModeBar: false
-            };
-            const PLOTLYDOMTIME = document.getElementById('plotly-chart-time');
-            Plotly.newPlot(PLOTLYDOMTIME, data, layout);
-        }
-    }
-
-    $:{
-        if($isMounted){
-            userTotal = sum(userStatsnum);
-            localStorage.setItem('userStatsnum', JSON.stringify(userStatsnum));
-        } 
-    }
-
-    $:{
-        userStatspct = userStatsnum.map((x) => x / userTotal * 100);
-    }
-
-    $: userAvg = calcAvg(...userStatspct)
-    $: avgAvg = calcAvg(...avgStatspct)
+    console.log(apiResult)
 
 
-
-</script>
-<Container>
-    <Row>
-        <Col>
-            <table>
-                <tr>
-                    <th># of Guesses</th>
-                    <th>User Stats</th> 
-                    <th>User Stats %</th> 
-                    <th>Global Stats %</th> 
-                </tr>
-                {#each statsNumbersstrs as num, index}
-                    <tr>
-                        <td>{num}</td>
-                        <td>
-                            <Input
-                                type="number"
-                                name='number{num}'
-                                id="statsNumber{num}"
-                                placeholder="number of {num}'s"
-                                bind:value={userStatsnum[index]}
-                            />
-                        </td>
-                        <td>{userStatspct[index].toFixed(1)}</td>
-                        <td>{avgStatspct[index].toFixed(1)}</td>
-                    </tr>
-                {/each}
-                <tr>
-                    <td></td>
-                    <td>Total: {userTotal}</td>
-                    <td>Avg: {userAvg.toFixed(2)}</td>
-                    <td>Avg: {avgAvg.toFixed(2)}</td>
-                </tr>
-
-            </table>
-            <!-- <Button color="primary">butt</Button> -->
-        </Col>
-        <Col>
-            <TabContent pills>
-                <TabPane tabId="tab-score-dist" tab="Score Distribution" active>
-                    <div id='plotly-chart' style="width:100%;height:90%;"></div>
-                    <!-- <div class="mb-3">
-                        <Dropdown>
-                        <DropdownToggle caret>Date</DropdownToggle>
-                        <DropdownMenu>
-                            <DropdownItem>No Brush, No Lather</DropdownItem>
-                        </DropdownMenu>
-                        </Dropdown> 
-                    </div> -->
-                </TabPane>
-                <TabPane tabId="tab-time" tab="Charts">
-                    <FormGroup>
-                        <Row>
-                            <Col>
-                                <Label for="form-selecty">Select y</Label>
-                                <Input type="select" name="form-selecty" id="form-selecty" bind:value={selectedItemCharty}>
-                                    {#each keylisty as key}
-                                        <option>{key}</option>
-                                    {/each}
-                                </Input>
-                            </Col>
-                            <Col>
-                                <Label for="form-selectx">Select x</Label>
-                                <Input type="select" name="form-selectx" id="form-selectx" bind:value={selectedItemChartx}>
-                                    {#each keylistx as key}
-                                        <option>{key}</option>
-                                    {/each}
-                                </Input>
-                            </Col>
-                        </Row>
-                      </FormGroup>
-                        
-                    <div id='plotly-chart-time' style="width:100%;height:90%;"></div>
-                </TabPane>
-            </TabContent>
-
-        </Col>
-        
-    </Row>
-</Container>
-<!-- <Styles/> -->
-
-
-
-<style>
-
-    th, td {
-    padding-top: 5px;
-    padding-bottom: 5px;
-    padding-left: 30px;
-    padding-right: 40px;
 }
 
 
+</script>
 
+<Container>
+    <Row>
+        <Col xs="5">
+            <FormGroup>
+                <input type="text" bind:value={enteredWord} minlength="5" maxlength="5"/>
+                <Button on:click={validate_submit}>Submit</Button>
+            </FormGroup>
+            {#if isLoading}
+                <Spinner color="primary" /> Loading - Can take 10 or 15 seconds
+                
+        {/if}
+        </Col>
+        <Col>
+            Second Column
+        </Col>    
+    </Row>
+</Container>
+
+<style>
+    input {
+        border: 0px solid currentcolor;
+    }
+    input:focus {
+        border: 0px solid currentcolor;
+    }
+    input:invalid {
+        border: 2px solid red;
+    }
+    input:invalid:focus {
+        border: 2px solid red;
+    }
 </style>

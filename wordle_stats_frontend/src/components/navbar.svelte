@@ -32,8 +32,8 @@
     <Collapse {isOpen} navbar expand="md" on:update={handleUpdate}>
         <Nav class="ms-auto" navbar>
         <NavItem>
-            <NavLink href="/model">Avg Score Model</NavLink>
-            </NavItem>
+            <NavLink href="/">Predictive Model</NavLink>
+        </NavItem>
         <NavItem>
             <NavLink href="/distribution">Distribution</NavLink>
         </NavItem>
