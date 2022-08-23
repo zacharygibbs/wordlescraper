@@ -13,7 +13,7 @@
         load_data_if_not,
         transform_df_to_obj_array, 
         CHARTMODE
-    } from './helpers.js'
+    } from './helpers/+server.js'
 
     import { 
         df,
