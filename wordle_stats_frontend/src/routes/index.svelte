@@ -98,9 +98,9 @@
 
             let layout = {
                 yaxis: {
-                    title: selectedItemCharty
+                    title: selectedItemCharty == 'avg' ? 'Average Wordle Score' : selectedItemCharty
                 },
-                title: enteredWord,
+                title: enteredWord.toUpperCase(),
                 displayModeBar: false,
                 shapes: [
                             {

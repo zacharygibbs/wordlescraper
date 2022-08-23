@@ -19,8 +19,6 @@
     import { Button, Input, FormGroup, Label} from 'sveltestrap';
     import * as d3 from 'd3';
 
-
-
     $isMounted = false;
 
     let userAvg;
@@ -95,7 +93,7 @@
             let trace2_avg = {
                 y: [avgAvg, avgAvg],
                 x: [0, d3.max(avgStatspct)],
-                name: 'User Stats % avg',
+                name: 'Global Stats % avg',
                 type: 'line',
             };
 

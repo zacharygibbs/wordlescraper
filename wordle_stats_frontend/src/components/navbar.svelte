@@ -20,7 +20,7 @@
 	});
     
 
-    const assemble_url = (route, hostname, subdir='wordle-stats-sciencey') => {
+    const assemble_url = (route, hostname, subdir='')=>{//'wordle-stats-sciencey') => {
         if(hostname == 'localhost' | hostname == 'localhost:3000'){
             return route
         }
