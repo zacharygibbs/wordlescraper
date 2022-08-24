@@ -9,11 +9,11 @@
         calcAvg, 
         load_data_if_not,
         transform_df_to_obj_array
-    } from './helpers.js'
+    } from '../helpers.js'
     import { 
         df,
         isMounted,
-    } from '../stores.js'
+    } from '../../stores.js'
     import { onMount } from "svelte";
     import { Styles, Col, Container, Row } from 'sveltestrap';
     import { Button, Input, FormGroup, Label} from 'sveltestrap';
