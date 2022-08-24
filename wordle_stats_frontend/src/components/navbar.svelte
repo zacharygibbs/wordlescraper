@@ -42,12 +42,12 @@
 
 
 <Navbar color="secondary" dark expand="md">
-    <NavbarBrand href="index.html">Wordle-Stats-Sciencey</NavbarBrand>
+    <NavbarBrand href={assemble_url("/", hostname)}>Wordle-Stats-Sciencey</NavbarBrand>
     <NavbarToggler on:click={() => (isOpen = !isOpen)} />
     <Collapse {isOpen} navbar expand="md" on:update={handleUpdate}>
         <Nav class="ms-auto" navbar>
         <NavItem>
-            <NavLink href="index.html">Predictive Model</NavLink>
+            <NavLink href="predict/batch">Predictive Model</NavLink>
         </NavItem>
         <NavItem>
             <NavLink href="distribution">Distribution</NavLink>
