@@ -2,7 +2,7 @@ import * as d3 from 'd3';
 import { 
     df,
     isMounted,
-} from '../../stores.js'
+} from '../stores.js'
 
 
 export const KEYLISTDEFAULTY = ['avg', 'stddev', 'pctCG_good', 'pctCG_medium', 'pctCG_bad'];
