@@ -22,7 +22,7 @@
 
     import {
         getPrediction
-    } from './_model_prediction_api'
+    } from './+page.server.js'
 
     import { onMount } from "svelte";
     import { Styles, Col, Container, Row } from 'sveltestrap';
