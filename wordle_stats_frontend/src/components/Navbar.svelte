@@ -42,18 +42,18 @@
 
 
 <Navbar color="secondary" dark expand="md">
-    <NavbarBrand href={assemble_url("/", hostname)}>Wordle-Stats-Sciencey</NavbarBrand>
+    <NavbarBrand href={"/wordle-stats-sciencey/"}>Wordle-Stats-Sciencey</NavbarBrand>
     <NavbarToggler on:click={() => (isOpen = !isOpen)} />
     <Collapse {isOpen} navbar expand="md" on:update={handleUpdate}>
         <Nav class="ms-auto" navbar>
         <NavItem>
-            <NavLink href="predict/batch">Predictive Model</NavLink>
+            <NavLink href="/wordle-stats-sciencey/predict/nulls">Predictive Model</NavLink>
         </NavItem>
         <NavItem>
-            <NavLink href="distribution">Distribution</NavLink>
+            <NavLink href="/wordle-stats-sciencey/distribution">Distribution</NavLink>
         </NavItem>
         <NavItem>
-            <NavLink href="charts">Charts</NavLink>
+            <NavLink href="/wordle-stats-sciencey/charts">Charts</NavLink>
         </NavItem>
         <NavItem>
             <NavLink href="https://github.com/zacharygibbs/wordlescraper" target="_blank">GitHub</NavLink>

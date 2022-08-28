@@ -9,7 +9,7 @@
         calcAvg, 
         load_data_if_not,
         transform_df_to_obj_array
-    } from '../helpers.js'
+    } from '$lib/helpers.js'
     import { 
         df,
         isMounted,
