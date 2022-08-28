@@ -1,11 +1,14 @@
 <svelte:head>
-    
     <script src="https://cdn.plot.ly/plotly-2.14.0.min.js"></script>
 </svelte:head>
 
 <script>
     /** @type {import('./$types').PageData} */
     export let data;
+    console.log(data);
+    let predicted_data = data.predict
+    $df = data.df
+    
     /*
     Called index, but this is the predictive model
     want to have Text entry for user w/ submit button to get avg estimated, also return if that word has ever
@@ -16,7 +19,7 @@
         load_data_if_not,
         transform_df_to_obj_array, 
         CHARTMODE
-    } from '../../helpers.js'
+    } from '$lib/helpers'
 
     import { 
         df,
@@ -61,14 +64,9 @@
     const CHARTITEMS = ['avg', 'logfreq', 'scrabblescore', 'duplicate_letters'];
 
     onMount(async () => {
-        load_data_if_not($df)
-            .then((data) =>{
-                let result = transform_df_to_obj_array(data);
-                $df = result['df']
-                console.log($df)
-            })
         $isMounted=true;
-        validate_submit()
+        console.log($df);
+        validate_submit();
 	});
 
     const handleKeydown = (event) => {
@@ -148,14 +146,14 @@ const validate_submit = () =>{
     if($isMounted){
         console.log(enteredWord)
         if(enteredWord!==$page.params.slug){
-            routeToPage(enteredWord, true)
+            routeToPage(enteredWord, false);
         }
         isLoading = true;
         //getPrediction(enteredWord, window.location.hostname).then(data => {
         apiResult = JSON.parse(
-            Object.keys(data).reduce(
+            Object.keys(predicted_data).reduce(
                             (prev, cur, index) => {
-                                        return prev + data[Object.keys(data)[index]]
+                                        return prev + predicted_data[Object.keys(predicted_data)[index]]
                                     }, '')
         );
         isLoading = false;
