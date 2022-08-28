@@ -6,11 +6,6 @@ import {
     CHARTMODE
 } from '$lib/helpers'
 
-import { 
-    df,
-    isMounted,
-} from '../../../stores.js'
-
 const URL = 'https://infinite-temple-05275.herokuapp.com/';//wordleword/brick
 const URL_LOCALHOST = 'http://localhost:8000/'
 //
@@ -19,22 +14,6 @@ const URL_LOCALHOST = 'http://localhost:8000/'
 export async function load({ params }) {
     let hostname = 'localhost'//window.location.hostname
     let urlChosen = hostname=='localhost' ? URL_LOCALHOST : URL 
-    //return d3.json(urlChosen + 'wordleword/' + wordleword)
-    // Default options are marked with *
-    console.log(df);
-    let responsefunc;
-    df.subscribe(data => {
-        ( responsefunc = async () => {
-            let newdf1 = {};    
-            await load_data_if_not(data).then((newdata) =>{
-                newdf1 = transform_df_to_obj_array(newdata);
-            })
-            return newdf1;
-            }
-        )()
-    });
-    let responsedf = await responsefunc()
-    let newdf = responsedf['df']
     let res;
     await fetch(urlChosen + 'wordleword/' + params.slug, {
         method: 'GET', // *GET, POST, PUT, DELETE, etc.
@@ -53,10 +32,7 @@ export async function load({ params }) {
         ).then(resp => {
             console.log(resp.status, resp.data)
     });
-    //console.log(res);
-    //console.log({predict: res, df: newdf})
-    newdf.date = newdf.date.map(v => v.toJSON());
-    return {predict: res, df: newdf};
+    return {predict: res};
   throw error(404, 'Not found');
   
 }

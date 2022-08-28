@@ -9,8 +9,9 @@ const config = {
       adapter: adapter(),
       appDir: '_app',
       prerender: {default: true},
-      paths: {base:'/wordle-stats-sciencey'}
+      paths: {base:'/wordle-stats-sciencey'},
   }
+
 };
 
 export default config;

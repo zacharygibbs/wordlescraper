@@ -5,9 +5,8 @@
 <script>
     /** @type {import('./$types').PageData} */
     export let data;
-    console.log(data);
-    let predicted_data = data.predict
-    $df = data.df
+    let predicted_data = JSON.parse(data.predict);
+    console.log(predicted_data);
     
     /*
     Called index, but this is the predictive model
@@ -64,6 +63,12 @@
     const CHARTITEMS = ['avg', 'logfreq', 'scrabblescore', 'duplicate_letters'];
 
     onMount(async () => {
+        await load_data_if_not($df)
+            .then((data) =>{
+                console.log(data); // [{"Hello": "world"}, …]
+                let result = transform_df_to_obj_array(data);
+                $df = result['df']
+            })
         $isMounted=true;
         console.log($df);
         validate_submit();
@@ -150,20 +155,15 @@ const validate_submit = () =>{
         }
         isLoading = true;
         //getPrediction(enteredWord, window.location.hostname).then(data => {
-        apiResult = JSON.parse(
-            Object.keys(predicted_data).reduce(
-                            (prev, cur, index) => {
-                                        return prev + predicted_data[Object.keys(predicted_data)[index]]
-                                    }, '')
-        );
+
         isLoading = false;
         errorPredicted = '';
-        if(apiResult.hasOwnProperty('Error')){
-            errorPredicted = apiResult['Error'];
+        if(predicted_data.hasOwnProperty('Error')){
+            errorPredicted = predicted_data['Error'];
         }
         //{"wordleword":"GLADE","freq":1168016,"logfreq":6.067448792,"letter_matches_2":742.0,"letter_matches_3":359.0,"letter_matches_4":66.0,"letter_matches_5":7.0,"duplicate_letters":0.0,"scrabblescore":7,"num_vowels":2,"starts_with_vowel":0,"avg_predicted":4.0544637434}
-        console.log(apiResult)
-        isValid = apiResult!={} && !apiResult.hasOwnProperty('Error')
+        console.log(predicted_data)
+        isValid = predicted_data!={} && !predicted_data.hasOwnProperty('Error')
         console.log($df['wordleword'])
         if(isValid){
             update_chart();

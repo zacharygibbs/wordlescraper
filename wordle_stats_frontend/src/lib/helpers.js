@@ -39,7 +39,12 @@ export const calcAvg = (pct1, pct2, pct3, pct4, pct5, pct6, pctx) => {
 
 export const load_data_if_not = (fd) => {    
     if(Object.keys(fd).length==0){
-        return d3.json('wordlestats_list.json')
+        try {
+            return d3.json('/wordle-stats-sciencey/wordlestats_list.json')
+        }
+        catch(err){
+            return d3.json('https://coolsciencey.com/wordle-stats-sciencey/wordlestats_list.json')
+        }
     }
     else{
         return new Promise(function(resolve,reject){
