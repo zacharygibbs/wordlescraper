@@ -40,7 +40,7 @@
         else{
             userStatsnum = [0,0,0,1,0,0,0];
         }
-        load_data_if_not($df)
+        await load_data_if_not($df)
             .then((data) =>{
                 console.log(data); // [{"Hello": "world"}, …]
                 let result = transform_df_to_obj_array(data);

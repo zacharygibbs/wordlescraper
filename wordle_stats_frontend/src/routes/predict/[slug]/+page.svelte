@@ -55,7 +55,6 @@
     
     let enteredWord = $page.params.slug;
     let isLoading = false;
-    let apiResult = {};
     let errorPredicted = '';
     let isValid = false;
     let find_word = [];
@@ -100,7 +99,7 @@
                 };
                 let data;
                 let trace2;
-                let predictedResult = apiResult[selectedItemCharty + (selectedItemCharty=='avg' ? '_predicted' : '')];
+                let predictedResult = predicted_data[selectedItemCharty + (selectedItemCharty=='avg' ? '_predicted' : '')];
                 if(selectedItemCharty == 'avg'){
                     trace2 = {
                         y: $df[selectedItemCharty+'_predicted'],
@@ -214,7 +213,7 @@ const validate_submit = () =>{
                 <tr>
                     <td>
                         {#if isValid}
-                            {apiResult['wordleword']}
+                            {predicted_data['wordleword']}
                         {/if}
                     </td>
                     <td>
@@ -224,28 +223,28 @@ const validate_submit = () =>{
                     </td>
                     <td>
                         {#if isValid}
-                            {apiResult['avg_predicted'].toFixed(2)}
+                            {predicted_data['avg_predicted'].toFixed(2)}
                         {:else}
                             N/A
                         {/if}
                     </td>
                     <td>
                         {#if isValid}
-                            {apiResult['logfreq'].toFixed(1)}
+                            {predicted_data['logfreq'].toFixed(1)}
                         {:else}
                             N/A
                         {/if}
                     </td>
                     <td>
                         {#if isValid}
-                            {apiResult['scrabblescore']}
+                            {predicted_data['scrabblescore']}
                         {:else}
                             N/A
                         {/if}
                     </td>
                     <td>
                         {#if isValid}
-                            {apiResult['duplicate_letters']}
+                            {predicted_data['duplicate_letters']}
                         {:else}
                             N/A
                         {/if}
