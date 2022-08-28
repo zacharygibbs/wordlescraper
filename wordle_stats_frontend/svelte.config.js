@@ -7,8 +7,9 @@ const config = {
   kit: {
       // hydrate the <div id="svelte"> element in src/app.html
       adapter: adapter(),
-      appDir: 'wordle-stats-sciencey/_app',
-      prerender: {default: true}
+      appDir: '_app',
+      prerender: {default: true},
+      paths: {base:'/wordle-stats-sciencey'}
   }
 };
 
