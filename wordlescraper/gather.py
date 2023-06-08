@@ -3,7 +3,7 @@ This file is meant to gather wordle specific data from various sources
 Author - Zach Gibbs 6/8/2022
 """
 
-import os
+import os, sys
 import json
 from telnetlib import SE
 from typing import Sequence
@@ -12,6 +12,9 @@ import tweepy
 import pandas as pd
 from bs4 import BeautifulSoup
 import urllib.request
+
+BASEPATH = os.path.split(__file__)[0]
+sys.path.append(BASEPATH)
 
 from helpers import get_secret_json
 
@@ -40,6 +43,7 @@ def get_allwords(to_file: str='allwords_list.csv') -> pd.DataFrame:
         'https://raw.githubusercontent.com/csokolove/wordle-word-list/main/wordlist.csv',
         header=None
     )
+    all_words = all_words.iloc[:,0].str.upper()
     all_words.to_csv(to_file, index=False)
     return all_words
     
@@ -131,9 +135,12 @@ def get_frequency(from_kaggle: bool=False, to_file: str='unigram_freq.csv') -> p
     returns
         df_freq - frequency dataset
     """
-    if from_kaggle:
+    if from_kaggle or not os.path.exists(to_file):
         os.system('sh get_kaggle_frequency_dataset.sh')
-    df_freq = pd.read_csv(to_file)
+    try:
+        df_freq = pd.read_csv(to_file)
+    except:
+        df_freq = pd.read_csv(os.path.join(BASEPATH, to_file))
     df_freq['word'] = df_freq['word'].str.upper()
     df_freq = df_freq.rename(columns={'word':'wordleword', 'count':'freq'})
     return df_freq
